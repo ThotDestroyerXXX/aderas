@@ -1,16 +1,29 @@
-import { boolean, check, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { comment } from "./comment";
 import { baseEntity } from "./baseEntity";
 import { task } from "./task";
-import { organization } from "./organization";
-import { user } from "./user";
+import { organizations } from "./organization";
+import { users } from "./user";
 import { sql } from "drizzle-orm";
 
-export const fileAttachment = pgTable("file_attachments", {
+export const fileAttachment = pgTable(
+  "file_attachments",
+  {
     ...baseEntity,
-    commentId: text("comment_id").references(() => comment.id, { onDelete: "cascade" }),
+    commentId: text("comment_id").references(() => comment.id, {
+      onDelete: "cascade",
+    }),
     taskId: text("task_id").references(() => task.id, { onDelete: "cascade" }),
-    organizationId: text("organization_id").references(() => organization.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id").references(() => organizations.id, {
+      onDelete: "cascade",
+    }),
     originalFileName: text("original_file_name").notNull(),
     storageKey: text("storage_key").notNull(),
     storageBucket: text("storage_bucket").notNull(),
@@ -18,9 +31,16 @@ export const fileAttachment = pgTable("file_attachments", {
     fileSizeBytes: integer("file_size_bytes").notNull(),
     isDeleted: boolean("is_deleted").default(false).notNull(),
     deletedAt: timestamp("deleted_at"),
-    deletedBy: text("deleted_by").references(() => user.id, { onDelete: "cascade" }),
-}, (table) => [
-    check("chk_attachment_target", sql`(${table.taskId} IS NOT NULL AND ${table.commentId} IS NULL) OR
+    deletedBy: text("deleted_by").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+  },
+  (table) => [
+    check(
+      "chk_attachment_target",
+      sql`(${table.taskId} IS NOT NULL AND ${table.commentId} IS NULL) OR
         (${table.commentId} IS NOT NULL AND ${table.taskId} IS NULL) OR
-        (${table.commentId} IS NOT NULL AND ${table.taskId} IS NOT NULL)`)
-]);
+        (${table.commentId} IS NOT NULL AND ${table.taskId} IS NOT NULL)`,
+    ),
+  ],
+);

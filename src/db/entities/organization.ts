@@ -6,10 +6,10 @@ import {
   index,
   varchar,
 } from "drizzle-orm/pg-core";
-import { user } from "./user";
+import { users } from "./user";
 import { baseEntity } from "./baseEntity";
 
-export const organization = pgTable(
+export const organizations = pgTable(
   "organizations",
   {
     id: text("id").primaryKey(),
@@ -22,16 +22,16 @@ export const organization = pgTable(
   (table) => [uniqueIndex("organizations_slug_uidx").on(table.slug)],
 );
 
-export const member = pgTable(
+export const members = pgTable(
   "members",
   {
     id: text("id").primaryKey(),
     organizationId: text("organization_id")
       .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
+      .references(() => organizations.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     role: text("role").default("member").notNull(),
     createdAt: timestamp("created_at").notNull(),
   },
@@ -41,13 +41,13 @@ export const member = pgTable(
   ],
 );
 
-export const invitation = pgTable(
+export const invitations = pgTable(
   "invitations",
   {
     id: text("id").primaryKey(),
     organizationId: text("organization_id")
       .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
+      .references(() => organizations.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
     role: text("role"),
     status: text("status").default("pending").notNull(),
@@ -55,7 +55,7 @@ export const invitation = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     inviterId: text("inviter_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
     index("invitations_organizationId_idx").on(table.organizationId),
@@ -68,7 +68,7 @@ export const team = pgTable(
   {
     ...baseEntity,
     organizationId: text("organization_id")
-      .references(() => organization.id, { onDelete: "cascade" })
+      .references(() => organizations.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name", { length: 100 }).notNull(),
     description: text("description"),
@@ -90,10 +90,10 @@ export const teamMember = pgTable(
       .references(() => team.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     addedBy: text("added_by")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
   },
   (table) => [
     uniqueIndex("idx_team_members_unique").on(table.teamId, table.userId),

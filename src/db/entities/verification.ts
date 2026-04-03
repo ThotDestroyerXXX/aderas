@@ -1,6 +1,6 @@
 import { text, pgTable, timestamp, index } from "drizzle-orm/pg-core";
 
-export const verification = pgTable(
+export const verifications = pgTable(
   "verifications",
   {
     id: text("id").primaryKey(),

@@ -11,7 +11,7 @@ import { project, taskStatus } from "./project";
 import { taskPriority, taskType } from "../enums/task";
 import { index } from "drizzle-orm/pg-core";
 import { varchar } from "drizzle-orm/pg-core";
-import { organization } from "./organization";
+import { organizations } from "./organization";
 import { uniqueIndex } from "drizzle-orm/pg-core";
 import { foreignKey } from "drizzle-orm/pg-core";
 
@@ -66,7 +66,7 @@ export const label = pgTable(
     ...baseEntity,
     organizationId: text("organization_id")
       .notNull()
-      .references(() => organization.id, {
+      .references(() => organizations.id, {
         onDelete: "cascade",
       }),
     name: varchar("name", { length: 50 }).notNull(),
