@@ -16,8 +16,8 @@ import {
   projectVisibility,
   statusCategory,
 } from "../enums/project";
-import { organization, team } from "./organization";
-import { user } from "./user";
+import { organizations, team } from "./organization";
+import { users } from "./user";
 import { isNotNull } from "drizzle-orm";
 
 export const project = pgTable(
@@ -25,7 +25,7 @@ export const project = pgTable(
   {
     ...baseEntity,
     organizationId: text("organization_id")
-      .references(() => organization.id, { onDelete: "cascade" })
+      .references(() => organizations.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name", { length: 100 }).notNull(),
     description: text("description"),
@@ -57,7 +57,7 @@ export const projectMember = pgTable(
       .references(() => project.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     teamId: text("team_id").references(() => team.id, { onDelete: "cascade" }),
     role: projectRole("role").default("member").notNull(),
   },

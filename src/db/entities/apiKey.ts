@@ -7,7 +7,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
-export const apiKey = pgTable(
+export const api_keys = pgTable(
   "api_keys",
   {
     id: text("id").primaryKey(),
