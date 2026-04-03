@@ -4,6 +4,7 @@ import db from "@/db"; // your drizzle instance
 import { emailOTP, organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { apiKey } from "@better-auth/api-key";
+import { EmailTypeEnum } from "@/vendor/resend/email-template";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -34,7 +35,34 @@ export const auth = betterAuth({
     nextCookies(),
     emailOTP({
       overrideDefaultEmailVerification: true,
-      async sendVerificationOTP({ otp, email }) {},
+      async sendVerificationOTP({ email, otp, type }) {
+        const appUrl =
+          process.env.BETTER_AUTH_URL ??
+          process.env.NEXT_PUBLIC_APP_URL ??
+          "http://localhost:3000";
+
+        const subjectByType: Record<string, string> = {
+          "email-verification": "OTP Verification",
+          "sign-in": "Sign in OTP",
+          "forget-password": "Password reset OTP",
+          "password-reset": "Password reset OTP",
+        };
+
+        const response = await fetch(`${appUrl}/api/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: { kind: EmailTypeEnum.OTP, otpCode: otp },
+            email,
+            subject: subjectByType[type] ?? "Your OTP Code",
+          }),
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          throw new Error(`Failed to send OTP email: ${responseText}`);
+        }
+      },
     }),
     organization({
       schema: {

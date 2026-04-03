@@ -7,8 +7,8 @@ import { createAuthClient } from "better-auth/react";
 import { auth } from "./auth";
 import { apiKeyClient } from "@better-auth/api-key/client";
 import { SignInSchema, SignUpSchema } from "./schema";
-import { apiPath } from "@/constants/apiPath";
 import { toast } from "sonner";
+import { apiPath } from "@/constants/apiPath";
 
 export const authClient = createAuthClient({
   /** The base URL of the server (optional if you're using the same domain) */
@@ -27,10 +27,14 @@ export const signUpClient = async (data: SignUpSchema) => {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: `/`,
+      callbackURL: `${apiPath.OTP_VERIFICATION}`,
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await authClient.emailOtp.sendVerificationOtp({
+          email: data.email,
+          type: "email-verification",
+        });
         toast.success(
           "Signup successful! Please check your email for the OTP.",
         );
