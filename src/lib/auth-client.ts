@@ -7,8 +7,8 @@ import { createAuthClient } from "better-auth/react";
 import { auth } from "./auth";
 import { apiKeyClient } from "@better-auth/api-key/client";
 import { SignInSchema, SignUpSchema } from "./schema";
-import { apiPath } from "@/constants/apiPath";
 import { toast } from "sonner";
+import { apiPath } from "@/constants/apiPath";
 
 export const authClient = createAuthClient({
   /** The base URL of the server (optional if you're using the same domain) */
@@ -27,10 +27,14 @@ export const signUpClient = async (data: SignUpSchema) => {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: `/`,
+      callbackURL: `${apiPath.OTP_VERIFICATION}`,
     },
     {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await authClient.emailOtp.sendVerificationOtp({
+          email: data.email,
+          type: "email-verification",
+        });
         toast.success(
           "Signup successful! Please check your email for the OTP.",
         );
@@ -52,9 +56,7 @@ export const signInClient = async (data: SignInSchema) => {
     },
     {
       onSuccess: () => {
-        toast.success(
-          "Sign in successful! Please check your email for the OTP.",
-        );
+        toast.success("Sign in successful!");
       },
       onError: (error) => {
         toast.error("Sign in failed. Please try again.");
@@ -62,4 +64,44 @@ export const signInClient = async (data: SignInSchema) => {
       },
     },
   );
+};
+
+export const signOutClient = async () => {
+  try {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Sign out successful!");
+        },
+      },
+    });
+  } catch (error) {
+    toast.error("Sign out failed. Please try again.");
+    console.error("Sign out error:", error);
+  }
+};
+
+export const resetPasswordClient = async ({
+  newPassword,
+  token,
+}: {
+  newPassword: string;
+  token: string;
+}) => {
+  try {
+    const { data, error } = await authClient.resetPassword({
+      newPassword,
+      token,
+    });
+    if (error || !data) {
+      toast.error(error?.message || "Failed to reset password");
+      return;
+    } else {
+      toast.success("Password reset successful!");
+    }
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    toast.error("An unexpected error occurred. Please try again.");
+    return;
+  }
 };

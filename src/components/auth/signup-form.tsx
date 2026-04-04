@@ -43,7 +43,7 @@ export function SignupForm({
     try {
       setLoading(true);
       await signUpClient(data);
-      router.push("/");
+      router.push("/otp-verification");
       form.reset();
     } catch (error) {
       toast.error("Signup failed. Please try again.");
