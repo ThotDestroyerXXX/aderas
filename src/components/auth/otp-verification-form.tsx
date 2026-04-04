@@ -30,7 +30,6 @@ export function OTPVerificationForm({ email }: Readonly<{ email: string }>) {
 
   const onSubmit = async (otp: string) => {
     setLoading(true);
-    console.log(otp);
     const { error } = await authClient.emailOtp.checkVerificationOtp({
       email: email, // required
       type: "email-verification", // required
