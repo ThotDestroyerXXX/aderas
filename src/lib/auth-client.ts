@@ -9,6 +9,7 @@ import { apiKeyClient } from "@better-auth/api-key/client";
 import { SignInSchema, SignUpSchema } from "./schema";
 import { toast } from "sonner";
 import { apiPath } from "@/constants/apiPath";
+import { ac, admin, guest, member, owner } from "@/lib/permission";
 
 export const authClient = createAuthClient({
   /** The base URL of the server (optional if you're using the same domain) */
@@ -16,7 +17,15 @@ export const authClient = createAuthClient({
   plugins: [
     inferAdditionalFields<typeof auth>(),
     emailOTPClient(),
-    organizationClient(),
+    organizationClient({
+      ac,
+      roles: {
+        guest,
+        member,
+        admin,
+        owner,
+      },
+    }),
     apiKeyClient(),
   ],
 });
@@ -103,5 +112,17 @@ export const resetPasswordClient = async ({
     console.error("Error resetting password:", error);
     toast.error("An unexpected error occurred. Please try again.");
     return;
+  }
+};
+
+export const signInClientWithGitHub = async () => {
+  try {
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: `/`,
+    });
+  } catch (error) {
+    toast.error("GitHub sign in failed. Please try again.");
+    console.error("GitHub sign in error:", error);
   }
 };

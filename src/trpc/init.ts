@@ -1,4 +1,8 @@
 import { auth } from "@/lib/auth";
+import {
+  checkOrgPermission,
+  checkProjectPermission,
+} from "@/lib/permission-server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -50,3 +54,54 @@ export const protectedProcedure = t.procedure.use(
     });
   },
 );
+
+/**
+ * Use this to protect org-scoped procedures by permission target.
+ * Example: organizationAuthorizedProcedure("project", "create")
+ */
+export const organizationAuthorizedProcedure = (
+  resource: string,
+  action: string,
+) =>
+  protectedProcedure.use(async function isOrganizationAuthorized(opts) {
+    const hasPermission = await checkOrgPermission(resource, action);
+
+    if (!hasPermission) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You do not have permission to access this resource.",
+      });
+    }
+
+    return opts.next({
+      ctx: {
+        ...opts.ctx,
+      },
+    });
+  });
+
+export const projectAuthorizedProcedure = (
+  projectId: string,
+  resource: string,
+  action: string,
+) =>
+  protectedProcedure.use(async function isProjectAuthorized(opts) {
+    const hasPermission = await checkProjectPermission(
+      projectId,
+      resource,
+      action,
+    );
+
+    if (!hasPermission) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You do not have permission to access this resource.",
+      });
+    }
+
+    return opts.next({
+      ctx: {
+        ...opts.ctx,
+      },
+    });
+  });

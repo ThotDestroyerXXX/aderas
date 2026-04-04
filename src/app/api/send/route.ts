@@ -4,7 +4,6 @@ import {
 } from "@/vendor/resend/email-template";
 import { NextRequest } from "next/server";
 import { Resend } from "resend";
-import { z } from "zod";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
