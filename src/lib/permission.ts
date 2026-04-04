@@ -1,9 +1,4 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import { headers } from "next/headers";
-import { auth } from "./auth";
-import db from "@/db";
-import { and, eq } from "drizzle-orm";
-import { projectMember as projectMemberTable } from "@/db/entities/project";
 
 const statement = {
   // Organization-level resources
@@ -311,7 +306,7 @@ export const projectAdmin = ac.newRole({
   label: ["create", "update", "delete", "view", "assign"],
 });
 
-const roleMap = {
+export const roleMap = {
   guest,
   member,
   admin,
@@ -321,117 +316,4 @@ const roleMap = {
   projectAdmin,
 } as const;
 
-type RoleName = keyof typeof roleMap;
-type RoleAuthorizer = {
-  authorize: (
-    request: Record<string, string[]>,
-    connector?: "OR" | "AND",
-  ) => { success: boolean };
-};
-
-async function hasOrgPermission(resource: string, action: string) {
-  try {
-    const result = await auth.api.hasPermission({
-      headers: await headers(),
-      body: {
-        permissions: {
-          [resource]: [action],
-        } as Record<string, string[]>,
-      },
-    });
-
-    return result.success;
-  } catch {
-    return false;
-  }
-}
-
-function hasRolePermission(
-  roleName: RoleName,
-  resource: string,
-  action: string,
-) {
-  const role = roleMap[roleName] as unknown as RoleAuthorizer;
-  const result = role.authorize({
-    [resource]: [action],
-  });
-
-  return result.success;
-}
-
-function isOrgElevatedRole(role: string | undefined) {
-  if (!role) return false;
-
-  const roles = new Set(
-    role
-      .split(",")
-      .map((item) => item.trim().toLowerCase())
-      .filter(Boolean),
-  );
-
-  return roles.has("owner") || roles.has("admin");
-}
-
-export async function checkOrgPermission(resource: string, action: string) {
-  return hasOrgPermission(resource, action);
-}
-
-export async function checkProjectPermission(
-  projectId: string,
-  resource: string,
-  action: string,
-) {
-  // Get session from better-auth
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) return false;
-
-  const userId = session.user.id;
-  const activeMemberRole = await auth.api.getActiveMemberRole({
-    headers: await headers(),
-  });
-  const orgRole = activeMemberRole?.role;
-
-  // Org owners and admins bypass project-level checks
-  // They have full access to all projects regardless
-  if (isOrgElevatedRole(orgRole)) {
-    return hasOrgPermission(resource, action);
-  }
-
-  // For members and guests — fetch their project-specific role
-  // from YOUR database (better-auth doesn't know about this)
-  const [projectMember] = await db
-    .select({ role: projectMemberTable.role })
-    .from(projectMemberTable)
-    .where(
-      and(
-        eq(projectMemberTable.projectId, projectId),
-        eq(projectMemberTable.userId, userId),
-      ),
-    )
-    .limit(1);
-
-  if (!projectMember) return false; // not a member of this project
-
-  // Map your DB role to the ac role name
-  const projectRole = mapProjectRole(projectMember.role);
-
-  // Use ac to check permission with the project role
-  return hasRolePermission(projectRole, resource, action);
-}
-
-// Maps your DB enum to the ac role name
-function mapProjectRole(role: string): RoleName {
-  switch (role.toLowerCase()) {
-    case "admin":
-      return "projectAdmin";
-    case "member":
-      return "projectMember";
-    case "viewer":
-      return "projectViewer";
-    default:
-      return "projectViewer";
-  }
-}
+export type RoleName = keyof typeof roleMap;
