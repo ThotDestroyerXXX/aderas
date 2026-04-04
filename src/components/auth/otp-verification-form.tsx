@@ -82,14 +82,30 @@ export function OTPVerificationForm({ email }: Readonly<{ email: string }>) {
                 size='xs'
                 onClick={async () => {
                   setLoading(true);
-                  await authClient.emailOtp.sendVerificationOtp({
-                    email: email,
-                    type: "email-verification",
-                  });
-                  toast.success(
-                    "resend successful! Please check your email for the OTP.",
-                  );
-                  setLoading(false);
+                  try {
+                    const { error } =
+                      await authClient.emailOtp.sendVerificationOtp({
+                        email: email,
+                        type: "email-verification",
+                      });
+
+                    if (error) {
+                      toast.error(
+                        "Resend failed. Please try again in a moment.",
+                      );
+                      console.error("OTP resend error:", error);
+                      return;
+                    }
+
+                    toast.success(
+                      "resend successful! Please check your email for the OTP.",
+                    );
+                  } catch (error) {
+                    toast.error("Resend failed. Please try again in a moment.");
+                    console.error("OTP resend error:", error);
+                  } finally {
+                    setLoading(false);
+                  }
                 }}
               >
                 <RefreshCwIcon />
