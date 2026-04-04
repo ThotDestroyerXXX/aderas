@@ -55,11 +55,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      return Response.json({ error }, { status: 500 });
+      console.error("Failed to send email via Resend:", error);
+      return Response.json({ error: "Failed to send email." }, { status: 500 });
     }
 
     return Response.json(data);
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    console.error("Unexpected error while sending email:", error);
+    return Response.json({ error: "Failed to send email." }, { status: 500 });
   }
 }
