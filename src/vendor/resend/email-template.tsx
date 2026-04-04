@@ -11,16 +11,25 @@ export type EmailTypeProps =
   | {
       kind: EmailTypeEnum.OTP;
       otpCode: string;
+    }
+  | {
+      kind: EmailTypeEnum.RESET_PASSWORD;
+      resetUrl: string;
     };
 
 export enum EmailTypeEnum {
   VERIFICATION,
   OTP,
+  RESET_PASSWORD,
 }
 
 export function EmailTemplate({ email, type }: EmailTemplateProps): string {
   if (type.kind === EmailTypeEnum.OTP) {
     return OTPEmailTemplate({ email, otpCode: type.otpCode });
+  }
+
+  if (type.kind === EmailTypeEnum.RESET_PASSWORD) {
+    return ResetPasswordEmailTemplate({ email, resetUrl: type.resetUrl });
   }
 
   return `<p>Hello ${email}, please verify your email.</p>`;
@@ -376,4 +385,19 @@ table, td { color: #ffffff; } #u_body a { color: #0071e3; text-decoration: under
 </html>
 
         `;
+}
+
+export function ResetPasswordEmailTemplate({
+  email,
+  resetUrl,
+}: {
+  email: string;
+  resetUrl: string;
+}): string {
+  return `
+    <p>Hello ${email},</p>
+    <p>You requested to reset your password. Click the link below to set a new password:</p>
+    <a href="${resetUrl}">Reset Password</a>
+    <p>If you did not request a password reset, please ignore this email.</p>
+  `;
 }

@@ -56,9 +56,7 @@ export const signInClient = async (data: SignInSchema) => {
     },
     {
       onSuccess: () => {
-        toast.success(
-          "Sign in successful! Please check your email for the OTP.",
-        );
+        toast.success("Sign in successful!");
       },
       onError: (error) => {
         toast.error("Sign in failed. Please try again.");
@@ -66,4 +64,44 @@ export const signInClient = async (data: SignInSchema) => {
       },
     },
   );
+};
+
+export const signOutClient = async () => {
+  try {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Sign out successful!");
+        },
+      },
+    });
+  } catch (error) {
+    toast.error("Sign out failed. Please try again.");
+    console.error("Sign out error:", error);
+  }
+};
+
+export const resetPasswordClient = async ({
+  newPassword,
+  token,
+}: {
+  newPassword: string;
+  token: string;
+}) => {
+  try {
+    const { data, error } = await authClient.resetPassword({
+      newPassword,
+      token,
+    });
+    if (error || !data) {
+      toast.error(error?.message || "Failed to reset password");
+      return;
+    } else {
+      toast.success("Password reset successful!");
+    }
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    toast.error("An unexpected error occurred. Please try again.");
+    return;
+  }
 };

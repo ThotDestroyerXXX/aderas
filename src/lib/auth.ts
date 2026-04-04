@@ -12,6 +12,25 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ url, user }) => {
+      const response = await fetch(
+        `${process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/send`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: { kind: EmailTypeEnum.RESET_PASSWORD, resetUrl: url },
+            email: user.email,
+            subject: "Reset your password",
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(`Failed to send OTP email: ${responseText}`);
+      }
+    },
   },
   user: {
     modelName: "users",
