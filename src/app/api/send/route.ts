@@ -6,7 +6,19 @@ import { NextRequest } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
+
+if (!RESEND_API_KEY) {
+  throw new Error("RESEND_API_KEY environment variable is not set.");
+}
+
+if (!INTERNAL_API_SECRET) {
+  throw new Error("INTERNAL_API_SECRET environment variable is not set.");
+}
+
+const resend = new Resend(RESEND_API_KEY);
 
 const sendEmailSchema = z
   .object({
@@ -32,6 +44,10 @@ const sendEmailSchema = z
   });
 
 export async function POST(request: NextRequest) {
+  if (request.headers.get("x-internal-secret") !== INTERNAL_API_SECRET) {
+    return Response.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
     const parsedPayload = sendEmailSchema.safeParse(await request.json());
 
@@ -48,7 +64,7 @@ export async function POST(request: NextRequest) {
     const payload = parsedPayload.data as EmailTemplateProps;
     const { type, email, subject } = payload;
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL ?? "Acme <onboarding@resend.dev>",
+      from: RESEND_FROM_EMAIL ?? "Acme <onboarding@resend.dev>",
       to: [email],
       subject,
       html: EmailTemplate({ type, email, subject }),

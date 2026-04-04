@@ -17,7 +17,10 @@ export const auth = betterAuth({
         `${process.env.BETTER_AUTH_URL || "http://localhost:3000"}/api/send`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": process.env.INTERNAL_API_SECRET,
+          },
           body: JSON.stringify({
             type: { kind: EmailTypeEnum.RESET_PASSWORD, resetUrl: url },
             email: user.email,
@@ -69,7 +72,10 @@ export const auth = betterAuth({
 
         const response = await fetch(`${appUrl}/api/send`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": process.env.INTERNAL_API_SECRET,
+          },
           body: JSON.stringify({
             type: { kind: EmailTypeEnum.OTP, otpCode: otp },
             email,
