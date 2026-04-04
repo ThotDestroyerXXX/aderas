@@ -5,6 +5,7 @@ import { emailOTP, organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { apiKey } from "@better-auth/api-key";
 import { EmailTypeEnum } from "@/vendor/resend/email-template";
+import { ac, admin, guest, member, owner } from "@/lib/permission";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -32,6 +33,13 @@ export const auth = betterAuth({
         const responseText = await response.text();
         throw new Error(`Failed to send OTP email: ${responseText}`);
       }
+    },
+  },
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      scope: ["user:email"],
     },
   },
   user: {
@@ -98,6 +106,13 @@ export const auth = betterAuth({
         invitation: {
           modelName: "invitations",
         },
+      },
+      ac,
+      roles: {
+        guest,
+        member,
+        admin,
+        owner,
       },
     }),
     apiKey({
