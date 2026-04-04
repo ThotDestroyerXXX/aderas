@@ -30,19 +30,27 @@ export function OTPVerificationForm({ email }: Readonly<{ email: string }>) {
 
   const onSubmit = async (otp: string) => {
     setLoading(true);
-    const { error } = await authClient.emailOtp.checkVerificationOtp({
-      email: email, // required
-      type: "email-verification", // required
-      otp: otp, // required
-    });
-    if (error) {
-      toast.error("OTP input not matching or expired. Please try again.");
-      console.error("OTP verification error:", error);
-    } else {
-      toast.success("OTP verified successfully! You are now logged in.");
-      router.push(apiPath.HOME);
+
+    try {
+      const { error } = await authClient.emailOtp.checkVerificationOtp({
+        email: email, // required
+        type: "email-verification", // required
+        otp: otp, // required
+      });
+
+      if (error) {
+        toast.error("OTP input not matching or expired. Please try again.");
+        console.error("OTP verification error:", error);
+      } else {
+        toast.success("OTP verified successfully! You are now logged in.");
+        router.push(apiPath.HOME);
+      }
+    } catch (error) {
+      toast.error("Failed to verify OTP. Please try again.");
+      console.error("Unexpected OTP verification error:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
