@@ -31,7 +31,7 @@ export const authClient = createAuthClient({
 });
 
 export const signUpClient = async (data: SignUpSchema) => {
-  await authClient.signUp.email(
+  const { data: signUpData, error } = await authClient.signUp.email(
     {
       name: data.name,
       email: data.email,
@@ -44,35 +44,23 @@ export const signUpClient = async (data: SignUpSchema) => {
           email: data.email,
           type: "email-verification",
         });
-        toast.success(
-          "Signup successful! Please check your email for the OTP.",
-        );
-      },
-      onError: (error) => {
-        toast.error("Signup failed. Please try again.");
-        console.error("Signup error:", error);
       },
     },
   );
+  if (error || !signUpData) {
+    throw new Error(error?.message || "Signup failed");
+  }
 };
 
 export const signInClient = async (data: SignInSchema) => {
-  await authClient.signIn.email(
-    {
-      email: data.email,
-      password: data.password,
-      callbackURL: `/`,
-    },
-    {
-      onSuccess: () => {
-        toast.success("Sign in successful!");
-      },
-      onError: (error) => {
-        toast.error("Sign in failed. Please try again.");
-        console.error("Sign in error:", error);
-      },
-    },
-  );
+  const { data: signInData, error } = await authClient.signIn.email({
+    email: data.email,
+    password: data.password,
+    callbackURL: `/`,
+  });
+  if (error || !signInData) {
+    throw new Error(error?.message || "Sign in failed");
+  }
 };
 
 export const signOutClient = async () => {
@@ -124,5 +112,36 @@ export const signInClientWithGitHub = async () => {
   } catch (error) {
     toast.error("GitHub sign in failed. Please try again.");
     console.error("GitHub sign in error:", error);
+  }
+};
+
+export const checkOTPClient = async ({
+  email,
+  otp,
+}: {
+  email: string;
+  otp: string;
+}) => {
+  const { error } = await authClient.emailOtp.verifyEmail({
+    email: email, // required
+    otp: otp, // required
+  });
+
+  if (error) {
+    throw new Error(error.message || "OTP verification failed");
+  }
+};
+
+export const requestPasswordResetClient = async ({
+  email,
+}: {
+  email: string;
+}) => {
+  const { error, data } = await authClient.requestPasswordReset({
+    email: email,
+    redirectTo: `/update-password`,
+  });
+  if (error || !data) {
+    throw new Error(error?.message || "Failed to send reset password link");
   }
 };

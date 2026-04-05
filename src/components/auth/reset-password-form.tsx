@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useFormHook } from "@/hooks/use-form";
 import { ResetPasswordSchema, resetPasswordSchema } from "@/lib/schema";
 import { Controller } from "react-hook-form";
-import { authClient } from "@/lib/auth-client";
+import { requestPasswordResetClient } from "@/lib/auth-client";
 import { useState } from "react";
 import { toast } from "sonner";
 import ResetEmailSentCard from "./reset-email-sent-card";
@@ -39,23 +39,17 @@ export function ResetPasswordForm({
     console.log("Reset password link sent to:", datas.email);
     setLoading(true);
     try {
-      const { error, data } = await authClient.requestPasswordReset({
-        email: datas.email,
-        redirectTo: `/update-password`,
-      });
-      if (error || !data) {
-        toast.error(error?.message || "Failed to send reset password link");
-        setEmailSent(false);
-        return;
-      } else {
-        toast.success("Reset password link sent successfully");
-        setEmailSent(true);
-      }
+      await requestPasswordResetClient({ email: datas.email });
+      setEmailSent(true);
+      toast.success("Reset password link sent successfully");
     } catch (error) {
       console.error("Error sending reset password link:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again.",
+      );
       setEmailSent(false);
-      return;
     } finally {
       setLoading(false);
     }

@@ -43,6 +43,7 @@ export function SignupForm({
     try {
       setLoading(true);
       await signUpClient(data);
+      toast.success("Signup successful! Please check your email for the OTP.");
       router.push("/otp-verification");
       form.reset();
     } catch (error) {
