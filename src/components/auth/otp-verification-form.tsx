@@ -17,7 +17,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { authClient, checkOTPClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
@@ -32,24 +32,15 @@ export function OTPVerificationForm({ email }: Readonly<{ email: string }>) {
     setLoading(true);
 
     try {
-      const { error } = await authClient.emailOtp.checkVerificationOtp({
-        email: email, // required
-        type: "email-verification", // required
-        otp: otp, // required
-      });
+      await checkOTPClient({ email, otp });
 
-      if (error) {
-        toast.error("OTP input not matching or expired. Please try again.");
-        console.error("OTP verification error:", error);
-      } else {
-        toast.success("OTP verified successfully! You are now logged in.");
-        router.push(apiPath.HOME);
-      }
-    } catch (error) {
-      toast.error("Failed to verify OTP. Please try again.");
-      console.error("Unexpected OTP verification error:", error);
-    } finally {
-      setLoading(false);
+      toast.success("OTP verified successfully! You are now logged in.");
+      router.push(apiPath.HOME);
+    } catch (error: unknown) {
+      toast.error(
+        (error as { message?: string }).message ||
+          "OTP input not matching or expired. Please try again.",
+      );
     }
   };
 

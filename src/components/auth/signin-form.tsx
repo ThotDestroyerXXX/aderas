@@ -44,6 +44,7 @@ export function SignInForm({
     try {
       setLoading(true);
       await signInClient(data);
+      toast.success("Sign in successful!");
       router.push("/");
       form.reset();
     } catch (error) {

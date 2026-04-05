@@ -6,6 +6,9 @@ import { nextCookies } from "better-auth/next-js";
 import { apiKey } from "@better-auth/api-key";
 import { EmailTypeEnum } from "@/vendor/resend/email-template";
 import { ac, admin, guest, member, owner } from "@/lib/permission";
+import { headers } from "next/headers";
+import { apiPath } from "@/constants/apiPath";
+import { redirect } from "next/navigation";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -126,3 +129,15 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
+
+export const getServerSession = async () => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    return session ?? null;
+  } catch (error) {
+    console.error("Error fetching session:", error);
+    redirect(apiPath.SIGN_IN);
+  }
+};
