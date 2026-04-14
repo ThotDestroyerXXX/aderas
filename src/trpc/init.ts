@@ -49,7 +49,7 @@ export const protectedProcedure = t.procedure.use(
 
     return opts.next({
       ctx: {
-        ...ctx,
+        userId: ctx.userId,
       },
     });
   },
@@ -75,7 +75,7 @@ export const organizationAuthorizedProcedure = (
 
     return opts.next({
       ctx: {
-        ...opts.ctx,
+        userId: opts.ctx.userId,
       },
     });
   });
@@ -101,7 +101,7 @@ export const projectAuthorizedProcedure = (
 
     return opts.next({
       ctx: {
-        ...opts.ctx,
+        userId: opts.ctx.userId,
       },
     });
   });

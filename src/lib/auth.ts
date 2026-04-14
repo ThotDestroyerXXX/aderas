@@ -128,8 +128,6 @@ export const auth = betterAuth({
   ],
 });
 
-export type Session = typeof auth.$Infer.Session;
-
 export const getServerSession = async () => {
   try {
     const session = await auth.api.getSession({
@@ -141,3 +139,19 @@ export const getServerSession = async () => {
     redirect(apiPath.SIGN_IN);
   }
 };
+
+export const getServerWorkspaces = async () => {
+  try {
+    const data = await auth.api.listOrganizations({
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching workspaces:", error);
+    redirect(apiPath.SIGN_IN);
+  }
+};
+
+export type Session = typeof auth.$Infer.Session;
+export type Organization = typeof auth.$Infer.Organization;

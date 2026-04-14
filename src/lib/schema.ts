@@ -43,3 +43,39 @@ export const updatePasswordSchema = z
   });
 
 export type UpdatePasswordSchema = z.infer<typeof updatePasswordSchema>;
+
+export const organizationRoleSchema = z.enum([
+  "guest",
+  "member",
+  "admin",
+  "owner",
+]);
+
+export type OrganizationRole = z.infer<typeof organizationRoleSchema>;
+
+export const createOrganizationSchema = z.object({
+  organizationName: z
+    .string()
+    .min(1, "Organization name is required")
+    .max(100, "Organization name must be less than 100 characters"),
+  organizationSlug: z
+    .string()
+    .min(1, "Organization slug is required")
+    .max(100, "Organization slug must be less than 100 characters"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(500, "Description must be less than 500 characters"),
+  inviteEmails: z
+    .object({
+      email: z.email("Invalid email address"),
+      role: organizationRoleSchema,
+    })
+    .array()
+    .min(1, "At least one email is required"),
+  inviteMessage: z
+    .string()
+    .max(500, "Invite message must be less than 500 characters"),
+});
+
+export type CreateOrganizationSchema = z.infer<typeof createOrganizationSchema>;

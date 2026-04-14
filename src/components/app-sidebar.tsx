@@ -26,6 +26,7 @@ import {
   Delete02Icon,
   MessageQuestionIcon,
 } from "@hugeicons/core-free-icons";
+import { Organization } from "@/lib/auth";
 
 // This is sample data.
 const data = {
@@ -258,15 +259,19 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  workspaces,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { workspaces: Organization[] }) {
   return (
     <Sidebar className='border-r-0' {...props}>
       <SidebarHeader>
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
+        <NavWorkspaces workspaces={workspaces} />
         <NavFavorites favorites={data.favorites} />
-        <NavWorkspaces workspaces={data.workspaces} />
+
         <NavSecondary items={data.navSecondary} className='mt-auto' />
       </SidebarContent>
       <SidebarRail />

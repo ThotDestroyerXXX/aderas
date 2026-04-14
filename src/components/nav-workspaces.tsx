@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -13,28 +9,15 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowRight01Icon,
-  PlusSignIcon,
-  MoreHorizontalCircle01Icon,
-} from "@hugeicons/core-free-icons";
+import { Organization } from "@/lib/auth";
+import Link from "next/link";
+import { Ellipsis } from "lucide-react";
 
 export function NavWorkspaces({
   workspaces,
 }: Readonly<{
-  workspaces: {
-    name: string;
-    emoji: React.ReactNode;
-    pages: {
-      name: string;
-      emoji: React.ReactNode;
-    }[];
-  }[];
+  workspaces: Organization[];
 }>) {
   return (
     <SidebarGroup>
@@ -45,48 +28,17 @@ export function NavWorkspaces({
             <Collapsible key={workspace.name}>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <a href='#'>
-                    <span>{workspace.emoji}</span>
+                  <Link href='#'>
+                    <span>{workspace.logo}</span>
                     <span>{workspace.name}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuAction
-                    className='left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90'
-                    showOnHover
-                  >
-                    <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
-                  </SidebarMenuAction>
-                </CollapsibleTrigger>
                 <SidebarMenuAction showOnHover>
-                  <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+                  <Ellipsis />
                 </SidebarMenuAction>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {workspace.pages.map((page) => (
-                      <SidebarMenuSubItem key={page.name}>
-                        <SidebarMenuSubButton asChild>
-                          <a href='#'>
-                            <span>{page.emoji}</span>
-                            <span>{page.name}</span>
-                          </a>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
           ))}
-          <SidebarMenuItem>
-            <SidebarMenuButton className='text-sidebar-foreground/70'>
-              <HugeiconsIcon
-                icon={MoreHorizontalCircle01Icon}
-                strokeWidth={2}
-              />
-              <span>More</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/header";
-import { getServerSession } from "@/lib/auth";
+import { getServerSession, getServerWorkspaces } from "@/lib/auth";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,13 +24,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const data = await getServerSession();
+  const workspaces = await getServerWorkspaces();
   return (
     <html lang='en' className={`${inter.variable} h-full antialiased`}>
       <body>
         <TRPCProvider>
           <SidebarProvider>
-            <AppSidebar />
-            <main className='flex flex-col p-4'>
+            <AppSidebar workspaces={workspaces} />
+            <main className='flex flex-col w-full gap-6'>
               <Header user={data?.user || null} />
               {children}
             </main>

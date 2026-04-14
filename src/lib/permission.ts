@@ -1,6 +1,13 @@
 import { createAccessControl } from "better-auth/plugins/access";
+import {
+  defaultStatements,
+  adminAc,
+  memberAc,
+  ownerAc,
+} from "better-auth/plugins/organization/access";
 
 const statement = {
+  ...defaultStatements,
   // Organization-level resources
   organization: [
     "update", // update org name, avatar, settings
@@ -123,6 +130,7 @@ export const guest = ac.newRole({
  * but cannot manage the organization or delete others' work.
  */
 export const member = ac.newRole({
+  ...memberAc.statements, // include member statements from better-auth plugin
   organization: ["view"],
   member: ["view"],
   team: ["view"],
@@ -153,6 +161,7 @@ export const member = ac.newRole({
  * Cannot delete the organization itself.
  */
 export const admin = ac.newRole({
+  ...adminAc.statements, // include admin statements from better-auth plugin
   organization: ["view", "update"],
   member: ["invite", "remove", "update-role", "view", "deactivate"],
   team: ["create", "update", "delete", "view", "manage-members"],
@@ -193,6 +202,7 @@ export const admin = ac.newRole({
  * like deleting the organization.
  */
 export const owner = ac.newRole({
+  ...ownerAc.statements, // include owner statements from better-auth plugin
   organization: ["update", "delete", "view"],
   member: ["invite", "remove", "update-role", "view", "deactivate"],
   team: ["create", "update", "delete", "view", "manage-members"],
