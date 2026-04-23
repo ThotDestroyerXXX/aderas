@@ -1,6 +1,5 @@
 import { signInClientWithGitHub } from "@/lib/auth-client";
 import { Button } from "../ui/button";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 export default function SignInGithubButton({
   loading,
@@ -9,16 +8,13 @@ export default function SignInGithubButton({
   loading: boolean;
   setLoading: (loading: boolean) => void;
 }>) {
-  const router = useRouter();
   async function onGithubSignIn() {
     try {
       setLoading(true);
       await signInClientWithGitHub();
-      router.push("/");
     } catch (error) {
       toast.error("GitHub sign in failed. Please try again.");
       console.error("GitHub sign in error:", error);
-    } finally {
       setLoading(false);
     }
   }
