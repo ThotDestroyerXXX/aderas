@@ -18,10 +18,17 @@ import {
 import { TabsContent } from "../ui/tabs";
 import { ApiKey } from "@better-auth/api-key";
 
+type ApiKeyProps = {
+  apiKeys: Omit<ApiKey, "key">[];
+  total: number;
+  limit?: number;
+  offset?: number;
+};
+
 export function OrganizationApiKeySetting({
   apiKeyRows,
 }: Readonly<{
-  apiKeyRows: ApiKey;
+  apiKeyRows: ApiKeyProps;
 }>) {
   return (
     <TabsContent value='api-keys'>
