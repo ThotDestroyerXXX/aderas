@@ -99,6 +99,10 @@ export const auth = betterAuth({
       },
     }),
     organization({
+      teams: {
+        enabled: true,
+        maximumTeams: 10, // Optional: limit teams per organization
+      },
       schema: {
         organization: {
           modelName: "organizations",
@@ -109,7 +113,24 @@ export const auth = betterAuth({
         invitation: {
           modelName: "invitations",
         },
+        team: {
+          additionalFields: {
+            description: {
+              type: "string",
+              required: false,
+            },
+            color: {
+              type: "string",
+              required: false,
+            },
+            avatarUrl: {
+              type: "string",
+              required: false,
+            },
+          },
+        },
       },
+
       ac,
       roles: {
         guest,
@@ -127,6 +148,18 @@ export const auth = betterAuth({
     }),
   ],
 });
+
+export const signInServerWithGitHub = async () => {
+  try {
+    await auth.api.signInSocial({
+      body: {
+        provider: "github",
+      },
+    });
+  } catch (error) {
+    console.error("GitHub sign in error:", error);
+  }
+};
 
 export const getServerSession = async () => {
   try {
@@ -153,5 +186,73 @@ export const getServerWorkspaces = async () => {
   }
 };
 
+export const getServerCurrentOrganization = async (
+  organizationSlug: string,
+) => {
+  try {
+    const data = await auth.api.getFullOrganization({
+      query: {
+        organizationSlug: organizationSlug,
+        membersLimit: 100,
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching current organization:", error);
+  }
+};
+
+export const getServerActiveMemberRole = async () => {
+  try {
+    const { role } = await auth.api.getActiveMemberRole({
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return role;
+  } catch (error) {
+    console.error("Error fetching active member role:", error);
+    redirect(apiPath.SIGN_IN);
+  }
+};
+
+export const getServerTeamList = async (organizationId: string) => {
+  try {
+    const data = await auth.api.listOrganizationTeams({
+      query: {
+        organizationId: organizationId,
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching team list:", error);
+    redirect(apiPath.SIGN_IN);
+  }
+};
+
+export const getServerApiKeys = async (organizationId: string) => {
+  try {
+    const data = await auth.api.listApiKeys({
+      query: {
+        organizationId,
+        sortBy: "createdAt",
+        sortDirection: "desc",
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching API keys:", error);
+    redirect(apiPath.SIGN_IN);
+  }
+};
+
 export type Session = typeof auth.$Infer.Session;
 export type Organization = typeof auth.$Infer.Organization;
+export type Member = typeof auth.$Infer.Member;
+export type Invitation = typeof auth.$Infer.Invitation;
+export type Team = typeof auth.$Infer.Team;

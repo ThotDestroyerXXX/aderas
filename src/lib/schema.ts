@@ -79,3 +79,9 @@ export const createOrganizationSchema = z.object({
 });
 
 export type CreateOrganizationSchema = z.infer<typeof createOrganizationSchema>;
+
+export const getCurrentMemberRoleSchema = z.object({
+  organizationSlug: z.string().min(1, "Organization slug is required"),
+});
+
+export type GetCurrentMemberRoleSchema = z.infer<typeof getCurrentMemberRoleSchema>;

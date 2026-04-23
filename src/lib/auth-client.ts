@@ -1,9 +1,10 @@
 import {
   emailOTPClient,
   inferAdditionalFields,
+  inferOrgAdditionalFields,
   organizationClient,
 } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
+import { createAuthClient } from "better-auth/client";
 import { auth } from "./auth";
 import { apiKeyClient } from "@better-auth/api-key/client";
 import { SignInSchema, SignUpSchema } from "./schema";
@@ -18,6 +19,9 @@ export const authClient = createAuthClient({
     inferAdditionalFields<typeof auth>(),
     emailOTPClient(),
     organizationClient({
+      teams: {
+        enabled: true,
+      },
       ac,
       roles: {
         guest,
@@ -25,6 +29,7 @@ export const authClient = createAuthClient({
         admin,
         owner,
       },
+      schema: inferOrgAdditionalFields<typeof auth>(),
     }),
     apiKeyClient(),
   ],
@@ -145,3 +150,5 @@ export const requestPasswordResetClient = async ({
     throw new Error(error?.message || "Failed to send reset password link");
   }
 };
+
+export type Team = typeof authClient.$Infer.Team;
